@@ -11,11 +11,31 @@ export { flow } from 'fp-ts/lib/function';
 export { identity } from 'fp-ts/lib/function';
 
 // basic stuff
-export { unknown } from 'io-ts';
-export { null } from 'io-ts';
-export { string } from 'io-ts';
-export { undefined } from 'io-ts';
-export { void } from 'io-ts';
+
+import { unknownType } from './standard';
+import { unknown as unknownCodec } from 'io-ts';
+export const unknown = unknownCodec;
+export type unknown = unknownType;
+
+import { nullType } from './standard';
+import { null as nullCodec } from 'io-ts';
+export const null = nullCodec;
+export type null = nullType;
+
+import { stringType } from './standard';
+import { string as stringCodec } from 'io-ts';
+export const string = stringCodec;
+export type string = stringType;
+
+import { undefinedType } from './standard';
+import { undefined as undefinedCodec } from 'io-ts';
+export const undefined = undefinedCodec;
+export type undefined = undefinedType;
+
+import { voidType } from './standard';
+import { void as voidCodec } from 'io-ts';
+export const void = voidCodec;
+export type void = voidType;
 
 // function
 import * as function_ from 'fp-ts/lib/function';
@@ -28,27 +48,19 @@ export { Lazy } from 'fp-ts/lib/function';
 export { Predicate } from 'fp-ts/lib/function';
 
 // boolean
-export { boolean } from 'io-ts';
+import { booleanType } from './standard';
+import { boolean as booleanCodec } from 'io-ts';
+export const boolean = booleanCodec;
+export type boolean = booleanType;
 import * as boolean_ from 'fp-ts/lib/boolean';
 export { boolean_ };
 
 // number
-export { number } from 'io-ts';
+import { numberType } from './standard';
+import { number as numberCodec } from 'io-ts';
+export const number = numberCodec;
+export type number = numberType;
 export { NumberFromString as numberFromString } from 'io-ts-types/lib/NumberFromString';
-
-// Int
-export { Int } from 'io-ts';
-export { IntFromString } from 'io-ts-types/lib/IntFromString';
-
-// Record
-
-import { RecordType } from './standard';
-export { record as RecordCodec } from 'io-ts';
-export const Record = RecordCodec;
-export type Record<K extends string | number | symbol, T> = RecordType<K, T>;
-import * as Record_ from 'fp-ts/lib/Record';
-export { Record_ };
-export { record as Record__ } from 'fp-ts/lib/Record';
 
 // Array
 import { ArrayType } from './standard';
@@ -59,6 +71,20 @@ import * as Array_ from 'fp-ts/lib/Array';
 export { Array_ };
 export { array as Array__ } from 'fp-ts/lib/Array';
 export const array = <A>(...a: Array<A>) => a;
+
+// Record
+
+import { RecordType } from './standard';
+import { record as RecordCodec } from 'io-ts';
+export const Record = RecordCodec;
+export type Record<K extends string | number | symbol, T> = RecordType<K, T>;
+import * as Record_ from 'fp-ts/lib/Record';
+export { Record_ };
+export { record as Record__ } from 'fp-ts/lib/Record';
+
+// Int
+export { Int } from 'io-ts';
+export { IntFromString } from 'io-ts-types/lib/IntFromString';
 
 // NonEmptyArray
 import { nonEmptyArray as NonEmptyArrayCodec } from 'io-ts-types/lib/nonEmptyArray';
