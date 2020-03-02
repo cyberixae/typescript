@@ -41,13 +41,20 @@ export { Int } from 'io-ts';
 export { IntFromString } from 'io-ts-types/lib/IntFromString';
 
 // Record
-export { record as Record } from 'io-ts';
+
+import { RecordType } from './standard';
+export { record as RecordCodec } from 'io-ts';
+export const Record = RecordCodec;
+export type Record<K extends string | number | symbol, T> = RecordType<K, T>;
 import * as Record_ from 'fp-ts/lib/Record';
 export { Record_ };
 export { record as Record__ } from 'fp-ts/lib/Record';
 
 // Array
-export { array as Array } from 'io-ts';
+import { ArrayType } from './standard';
+import { array as ArrayCodec } from 'io-ts';
+export const Array = ArrayCodec;
+export type Array<T> = ArrayType<T>;
 import * as Array_ from 'fp-ts/lib/Array';
 export { Array_ };
 export { array as Array__ } from 'fp-ts/lib/Array';
