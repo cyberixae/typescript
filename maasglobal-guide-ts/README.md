@@ -94,51 +94,170 @@ const user: User = validator(User).decodeSync(json);
 
 We have collected some of the most basic utilities from typescript,
 fp-ts and io-ts  into maasglobal-prelude-ts package to make their
-use more convenient.
+use more convenient. The package also contains an 
+[IIFE](https://en.wikipedia.org/wiki/Immediately_invoked_function_expression)
+helper. It is particularly helpful when assigning constants based
+on a condition.
 
 ```typescript
 import * as P from 'maasglobal-prelude-ts'
 
-// type aliases are useful for humans and maintainability
-type Failure = string
+const shoes = P.ii(() => {
+  if (raining) {
+    return 'rubber boots'
+  }
+  return 'regular shoes';
+})
+```
 
+##### function
+
+* [function](https://gcanti.github.io/fp-ts/modules/function.ts.html)
+
+```typescript
+const zero = P.identity(0)
+const one = P.function_.increment(zero)
+const two = P.flow(
+  P.function_.increment,
+  P.function_.increment,
+)(zero)
+const three = [1,2,3,4,5,6].find(P.not((x) => x <3))
+const four = P.pipe(
+  zero,
+  P.function_.increment,
+  P.function_.increment,
+  P.function_.increment,
+  P.function_.increment,
+)
+
+function yesOrNo(input: boolean): 'yes'|'no' {
+  if (input === true) {
+    return 'yes'
+  }
+  if (input === false) {
+    return 'no'
+  }
+  return P.absurd(input)
+}
+```
+
+##### boolean
+
+* [boolean](https://gcanti.github.io/fp-ts/modules/boolean.ts.html)
+
+```typescript
+const bool: boolean = true
+const boolConstant: true = true
+```
+
+##### string
+
+* [string](https://gcanti.github.io/fp-ts/modules/number.ts.html)
+
+```typescript
+const string: string = 'foo'
+const strConstant: 'foo' = 'foo'
+```
+
+##### number
+
+* [number](https://gcanti.github.io/fp-ts/modules/number.ts.html)
+
+```typescript
 const number: number = 123
-const constant: 123 = 123
+const numConstant: 123 = 123
+```
+
+##### Array
+
+* [Array](https://gcanti.github.io/fp-ts/modules/Array.ts.html)
+* [NonEmptyArray](https://gcanti.github.io/fp-ts/modules/NonEmptyArray.ts.html) array with at least one item
+
+```typescript
 const array: Array<string|number> = ['foo', 123, 'bar', 456]
+```
+
+##### Tuple
+
+* [Tuple](https://gcanti.github.io/fp-ts/modules/Tuple.ts.html)
+* [Apply_.sequenceT](https://gcanti.github.io/fp-ts/modules/Apply.ts.html#sequencet)
+
+```typescript
 const pair: [string, number] = ['foo', 123]
+```
+
+##### Record
+
+* [Record](https://gcanti.github.io/fp-ts/modules/Record.ts.html) key/value mapping
+
+```typescript
 const record: Record<string, string|number> = {
   foo: 'foo',
   bar: 123
 }
-const stuct: { foo: string, bar: number } = {
+```
+
+##### Struct
+
+* [Apply_.sequenceS](https://gcanti.github.io/fp-ts/modules/Apply.ts.html#sequences)
+
+```typescript
+const struct: { foo: string, bar: number } = {
   foo: 'foo',
   bar: 123
 }
+```
 
+##### Option
 
+* [Option](https://gcanti.github.io/fp-ts/modules/Option.ts.html) value or "null"
+
+```typescript
 const aValue: P.Some<number> = {
   _tag: 'Some',
   value: 123
 }
+// or
+const aValue2: P.Some<number> = P.Option_.some(123)
+
 const noValue: P.None = {
   _tag: 'None',
 }
+// or
+const noValue2: P.None = P.Option_.none
+
 const anOptionalValue: P.Option<number> = aValue
 const noOptionalValue: P.Option<number> = noValue
+```
 
+##### Either
 
-const success: P.Right<number> = {
+* [Either](https://gcanti.github.io/fp-ts/modules/Either.ts.html) value or error
+
+```typescript
+
+// type aliases are useful for humans and maintainability
+type Failure = string
+type Success = number
+
+const success: P.Right<Success> = {
   _tag: 'Right',
   right: 123,
 }
+// or
+const sucess2: P.Right<Success> = P.Either_.right(123)
+
 const failure: P.Left<Failure> = {
   _tag: 'Left',
   left: 'Unable to calculate number',
 }
-const eitherSucess: P.Either<Failure, number> = success
-const eitherFailure: P.Either<Failure, number> = failure
+// or
+const failure2: P.Left<Failure> = P.Either_.left('Unable to calculate number')
 
-type Divide = (d: number) => (i: number) => P.Either<Failure, number>
+const eitherSucess: P.Either<Failure, Success> = success
+const eitherFailure: P.Either<Failure, Success> = failure
+
+type Divide = (d: number) => (i: number) => P.Either<Failure, Success>
 const divide: Divide = (divider) => {
   return (input) => {
     if (divider === 0) {
@@ -153,18 +272,58 @@ const divide: Divide = (divider) => {
     };
   };
 }
+// or
+const divide2: Divide = (divider) => (input) => P.pipe(
+ P.Either_.right(divider),
+ P.Either_.filterOrElse(
+   (d) => d !== 0,
+   () => 'Division by zero error'
+ ),
+ P.Either_.map((d) => input / d),
+);
+```
 
+##### These
 
+* [These](https://gcanti.github.io/fp-ts/modules/These.ts.html) extends either with `both` that can be used for warnings.
+
+##### Lazy
+
+Lazy is used for wrapping pure but heavy computations in a "thunk" `() => factorize(someBigNumber)`.
+It lets the caller discard the result without evaluating the computationaly heavy part.
+
+* [Lazy](https://gcanti.github.io/fp-ts/modules/function.ts.html#lazy-interface)
+
+##### IO
+
+IO wraps synchronous effects in a "thunk" `() => { ... your code goes here }`.
+It lets the caller discard the result without executing the computation.
+Unlike with Lazy functions, the computations are free to have side effects.
+For example printing on the screen or returning a random number.
+
+* [IO](https://gcanti.github.io/fp-ts/modules/IO.ts.html)
+* [IOEither](https://gcanti.github.io/fp-ts/modules/IOEither.ts.html)
+
+```typescript
 const printHello: P.IO<void> = () => console.log('hello')
+// or
+const printHello2: P.IO<void> = P.Console_.log('hello')
 
 type Printer = (x: unknown) => P.IO<void>
 const printer: Printer = (x) => () => console.log(x)
+// or
+const printer2: Printer = P.Console_.log
 
 type SumPrinter = (y: number) => (x: number) => P.IO<void>
 const printSum: SumPrinter = (y) => (x) => () => console.log(x + y)
+// or
+const printSum2: SumPrinter = (y) => (x) => P.Console_.log(x + y)
 
 type Dice = (sides: number) => P.IO<number>
 const dice: Dice = (sides) => () => 1 + Math.floor(Math.random() * sides)
+// or
+import * as Random_  from 'fp-ts/lib/Random'
+const dice2: Dice = (sides) => Random_.randomInt(1, sides)
 
 type D6 = P.IO<number>
 const d6: D6 = dice(6)
@@ -178,12 +337,46 @@ const d6Divider: D6Divider = (input) => () => {
   const diveByDiceRoll = divide(diceRoll)
   return diveByDiceRoll(input);
 }
+// or
+const d6Divider2: D6Divider = (input) => P.pipe(
+  d6,
+  P.IO_.chainFirst(P.Console_.log),
+  P.IO_.map((diceRoll) => P.pipe(
+    input,
+    divide(diceRoll),
+  )),
+)
+```
 
+##### Task
+
+Task wraps asynchronous effects in a "thunk" `async () => { ... your code goes here }`.
+It is a way of letting the caller discard the result without executing the computation.
+Task is essentially same as IO but uses promises to wrap asynchronous return values.
+
+* [Task](https://gcanti.github.io/fp-ts/modules/Task.ts.html)
+* [TaskOption](https://gcanti.github.io/fp-ts/modules/TaskOption.ts.html)
+* [TaskEither](https://gcanti.github.io/fp-ts/modules/TaskEither.ts.html)
+* [TaskThese](https://gcanti.github.io/fp-ts/modules/TaskThese.ts.html)
+
+```typescript
 // Task and TaskEither is similar to IO and IOEither but work with Promises
 type AsyncPrinter = <S>(s: S) => P.Task<void>
 const asyncPrinter: AsyncPrinter = (x) => async () => console.log(x)
+// or
+const asyncPrinter2: AsyncPrinter = P.Task_.fromIOK(P.Console_.log)
+```
 
+##### Reader
 
+Reader is used for injecting dependencies before executing the computation
+
+* [Reader](https://gcanti.github.io/fp-ts/modules/Reader.ts.html)
+* [ReaderEither](https://gcanti.github.io/fp-ts/modules/ReaderEither.ts.html)
+* [ReaderTask](https://gcanti.github.io/fp-ts/modules/ReaderTask.ts.html)
+* [ReaderTaskEither](https://gcanti.github.io/fp-ts/modules/ReaderTaskEither.ts.html)
+
+```typescript
 // ReaderTaskEither takes dependencies and returns a task with result
 type WithoutDeps = (i: number) => P.ReaderTaskEither<{ print: AsyncPrinter }, Failure, number>
 const withoutDeps: WithoutDeps = (input) => ({ print }) => async () => {
@@ -193,53 +386,7 @@ const withoutDeps: WithoutDeps = (input) => ({ print }) => async () => {
   const diveByDiceRoll = divide(diceRoll)
   return diveByDiceRoll(input);
 }
-
-```
-
-#### Convenience
-
-The example code in previous chapter is intended to be transparent
-do the reader can see the raw action that is going on in the
-background. However, big amount of the glue code can be avoided
-by using standard utils provided by fp-ts.
-
-```typescript
-const anOptionalValue2: P.Option<number> = P.Option_.some(123)
-const noOptionalValue2: P.Option<number> = P.Option_.none
-
-const eitherSucess2: P.Either<Failure, number> = P.Either_.right(123)
-const eitherFailure2: P.Either<Failure, number> = P.Either_.left('Unable to calculate number')
-
-const divide2: Divide = (divider) => (input) => P.pipe(
- P.Either_.right(divider),
- P.Either_.filterOrElse(
-   (d) => d !== 0,
-   () => 'Division by zero error'
- ),
- P.Either_.map((d) => input / d),
-);
-
-
-const printHello2: P.IO<void> = P.Console_.log('hello')
-
-const printer2: Printer = P.Console_.log
-
-const printSum2: SumPrinter = (y) => (x) => P.Console_.log(x + y)
-
-import * as Random_  from 'fp-ts/lib/Random'
-const dice2: Dice = (sides) => Random_.randomInt(1, sides)
-
-const d6Divider2: D6Divider = (input) => P.pipe(
-  d6,
-  P.IO_.chainFirst(P.Console_.log),
-  P.IO_.map((diceRoll) => P.pipe(
-    input,
-    divide(diceRoll),
-  )),
-)
-
-const asyncPrinter2: AsyncPrinter = P.Task_.fromIOK(P.Console_.log)
-
+// or
 const withoutDeps2: WithoutDeps = (input) => ({ print }) => P.pipe(
   P.Task_.fromIO(d6),
   P.Task_.chainFirst(print),
@@ -414,17 +561,3 @@ const strictMain: P.Task<void> = buildMain({
 
 strictMain();
 ```
-
-#### Links To Some Basic Tools
-
-* [function](https://gcanti.github.io/fp-ts/modules/function.ts.html) helper functions
-* [Record](https://gcanti.github.io/fp-ts/modules/Record.ts.html) key/value mapping
-* [Array](https://gcanti.github.io/fp-ts/modules/Array.ts.html) regular arrays
-* [NonEmptyArray](https://gcanti.github.io/fp-ts/modules/NonEmptyArray.ts.html) array with at least one item
-
-* [Either](https://gcanti.github.io/fp-ts/modules/Either.ts.html) value or error
-* [Option](https://gcanti.github.io/fp-ts/modules/Option.ts.html) value or "null"
-
-Taming [non-functional](https://gcanti.github.io/fp-ts/recipes/interoperability.html) code
-* [IO](https://gcanti.github.io/fp-ts/modules/IO.ts.html)/[IOEither](https://gcanti.github.io/fp-ts/modules/IOEither.ts.html) safety wrapper for synchronous side-effects
-* [Task](https://gcanti.github.io/fp-ts/modules/Task.ts.html)/[TaskEither](https://gcanti.github.io/fp-ts/modules/TaskEither.ts.html) safety wrapper for asynchronous side-effects
